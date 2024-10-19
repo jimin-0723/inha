@@ -1,0 +1,32 @@
+<div>
+    <h1 class="text-center mb-5"><%=title%></h1>
+    <div id = "div_list"></div>
+    <script type="x-handlebars-template" id="temp_list">
+        <table class="table">
+            {{#each .}}
+                <tr>
+                    <td><img src="{{thumbnail}}" width="30"></td>
+                    <td>{{title}}<br>{{price}}<br>{{authors}}
+                </tr>
+            {{/each}}
+        </table>
+    </script>
+</div>
+
+<script type = "module">
+    import { app } from '/javascripts/config.js' ;
+    import { getDatabase, onValue, ref, get} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-database.js";
+    const db = getDatabase(app);
+
+    //장바구니 목록
+    onValue(ref(db, `cart/${uid}`),snapshot=>{
+        let rows=[]; // 배열 만듦
+        snapshot.forEach(row=>{ // 반복문
+            rows.push({key:row.key, ...row.val()}); // 배열에 값 넣기
+        });
+        const temp = Handlebars.compile($("#temp_list").html());
+        $("#div_list").html(temp(rows));
+    });
+
+
+</script>
