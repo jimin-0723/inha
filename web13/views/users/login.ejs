@@ -1,0 +1,55 @@
+<div class="row justify-content-center my-5">
+    <div class="col-md-6 col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="text-center"><%=title%></h3>
+            </div>
+            <div class="card-body">
+                <form name="frm">
+                    <input class="form-control mb-3" 
+                      name = "email" value="blue@test.com">
+                    <input class="form-control mb-3" type="password" 
+                        name = "pass" value="12341234">
+                    <button class="btn btn-primary w-100">로그인</button>
+                </form>
+                <div class="text-end mt-3">
+                    <a href="/users/join">회원가입</a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import {app} from '/javascripts/config.js';
+    import {getAuth, signInWithEmailAndPassword} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+    const auth=getAuth(app);
+
+    //submit (로그인 버튼을 클릭 한 경우)
+    $(frm).on("submit", function(e){
+        e.preventDefault();
+        const email=$(frm.email).val(); //입렵한 값을 가져옴
+        const pass = $(frm.pass).val();
+
+        signInWithEmailAndPassword(auth, email, pass).then(success=>{//석세스일때 (then < 로그인 성공했을때)
+            alert("로그인 성공")
+            sessionStorage.setItem("email",email); // email 이라는 변수에 받은 이메일 저장
+            sessionStorage.setItem("uid", success.user.uid); // 파이어베이스에 사용자 UID를 가져와서 uid에 저장함 <장바구니 사용자별로 쓰기위해
+            if(sessionStorage.getItem("target")){//임시 저장했던 공간이 있으면| < info.ejs 로그인 안하고 장바구니 눌렀을때 세션스토리지
+                location.href=sessionStorage.getItem("target");// 글로가고
+            }else{
+                location.href="/"//아니면 그냥 홈페이지
+            }
+
+
+        }).catch(error=>{
+            alert("로그인 실패"+error.message);
+        }
+        )
+
+
+    });
+
+
+</script>

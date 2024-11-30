@@ -1,0 +1,96 @@
+<div>
+    <h1 class="text-center" my-5><%=title%></h1>
+    <div class="row">
+        <div class="col-md-4 col-lg-3">
+            <form name="frm" class="input-group mb-2">
+                <input name="query" value="인하대학교" class="form-control">
+                <button class="btn btn-success">검색</button>
+            </form>
+        </div>
+    </div>
+
+    
+
+    <div id="div_list"></div>
+    <div class="text-center">
+        <button  id="prev" class="btn btn-primary px-3">이전</button>
+        <span id="page" class="mx-3">1</span>
+        <button id="next" class="btn btn-primary px-3">다음</button>
+    </div>
+    
+    <script id="temp_list" type = "x-handlebars-template" > <!-- 출력할 양식을 만들어준거임-->
+        <table class="table table-striped table-hover">
+            {{#each documents}}
+                <tr>
+                    <td>{{place_name}}</td>
+                    <td>{{road_address_name}}</td>
+                    <td>{{phone}}</td>
+                </tr>
+            {{/each}}
+        </table>
+    </script>
+</div>
+
+
+
+<script>
+    let query = "인하대학교"; // 가져올 값 변수 지정. 이때 변수는 고정된거임 api에 있음
+    let page = 1;
+    let size = 10;
+
+    getList(); //함수 호출 해줘야함 <리스트 가져오기
+
+    //다음버튼
+    $("#next").on("click", function(){ //id라서 # 붙임
+        page++;
+        getList();
+    });
+
+    //이전버튼
+    $("#prev").on("click", function(){ //id라서 # 붙임
+        page--;
+        getList();
+    });
+
+
+    $(frm).on("submit", function(e){ //네임은 $하고 바로 씀
+        e.preventDefault();
+        query=$(frm.query).val();
+        if(query==""){
+            alert("검색어를 입력하세요!");
+        } else {
+            getList();
+        }
+    })
+
+    function getList(){ // 함수 만든거임. 리스트 가져오는...api , 가저올 데이터 종류 확인
+        $.ajax({ //뻔쩍 하지 않는거
+            type : "get",
+            url : "https://dapi.kakao.com/v2/local/search/keyword.json",
+            data : {query, page, size},
+            headers:{"Authorization": "KakaoAK 1040bc3be01d8f65fe14f68d4f61fba4"
+            },
+            success : function(data){
+                console.log(data);
+                const temp=Handlebars.compile($("#temp_list").html());
+                $("#div_list").html(temp(data));
+                const last= Math.ceil(data.meta.pageable_count/size);
+                
+
+                $("#page").html(`${page}/${last}`); //페이지 번쩍 하지 않고 가져옴
+                if(page==1){
+                    $("#prev").attr("disabled",true);
+                } else {
+                    $("#prev").attr("disabled",false);
+                }
+
+                if(data.meta.is_end){
+                    $("#next").attr("disabled",true);
+                } else {
+                    $("#next").attr("disabled",false);
+                }
+            }
+
+        });
+    }
+</script>

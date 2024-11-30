@@ -1,0 +1,51 @@
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <textarea id="contents" class="form-control mb-2" rows="5" placeholder="리뷰를 작성해주세요."></textarea>
+        <button id="write" class="btn btn-primary px-5">리뷰 등록</button>
+    </div>
+</div>
+
+<script type="module">
+    import { app } from '/javascripts/config.js' ;
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+    import { onSnapshot, where, orderBy, query } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+    const db = getFirestore(app);
+    const isbn = "<%=info.isbn%>";
+
+    //리뷰 목록 읽기
+    const q =query(collection(db, "review"),where("isbn","==",isbn), orderBy("date","desc"));
+    onSnapshot(q, snapshot=>{
+        let rows=[];
+        snapshot.forEach(row=>{
+            rows.push({id:row.id, ...row.data()})
+        });
+
+        console.log(rows);
+    });
+
+    if(uid){
+        $("#contents").show();
+    } else {
+        $("#contents").hide();
+    }
+
+    //리뷰등록버튼 눌렀을때
+    $("#write").on("click", async function(){
+        if(uid){
+            
+            const contents = $("#contents").val();
+            if(contents == ""){
+                alert("리뷰내용을 작성하세요.");
+                $("#contents").focus();
+            }else{
+                //리뷰등록
+                const date = moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
+                await addDoc(collection(db, "review"), {isbn, email, date, contents});
+                $("#contents").val("");
+            }
+        }else{
+            sessionStorage.setItem("target",window.location.href);
+            location.href="/users/login";
+        }
+    })
+</script>
